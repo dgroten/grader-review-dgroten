@@ -1,13 +1,49 @@
-CPATH='.:lib/hamcrest-core-1.3.jar:lib/junit-4.13.2.jar'
+CPATH='.;lib/hamcrest-core-1.3.jar;lib/junit-4.13.2.jar'
 
 rm -rf student-submission
 rm -rf grading-area
 
 mkdir grading-area
 
+# Step 1 - Clone the student repository
 git clone $1 student-submission
 echo 'Finished cloning'
 
+# Step 2 - Check that the student code contains ListExampls.java
+
+if [[ -f student-submission/ListExamples.java ]]; then
+    echo "File Existed"
+else
+    echo "ListExamples.java does not exist"
+    echo "Grade: 0"
+    exit 1
+fi
+
+# Step 3 - Put all of the relevant files in the grading-area directory
+
+cp student-submission/ListExamples.java  TestListExamples.java grading-area
+cp -r lib grading-area
+
+# Step 4 - Compile
+
+cd grading-area
+javac -cp "$CPATH" ListExamples.java TestListExamples.java
+
+echo "This is the exit code of javac (previous command): $?."
+
+# Step 5 - Run the tests
+
+test=$(java -cp "$CPATH" org.junit.runner.JUnitCore TestListExamples)
+
+# Step 6 - Report the grade
+
+if [[ "$test" == *"OK"* ]]; then
+    echo "Grade: 100"
+else
+    echo "Grade: 0"
+fi
+
+echo "$test"
 
 # Draw a picture/take notes on the directory structure that's set up after
 # getting to this point
